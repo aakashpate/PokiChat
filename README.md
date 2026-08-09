@@ -2,7 +2,7 @@
 
 A real-time chat application built using React, Node.js, Express and Socket.io.
 
-**Live Demo:** https://pulsechat-5lsk74ue2-aakash-8bba.vercel.app
+**Live Demo:** https://frontend-nu-eight-hh362h7zgx.vercel.app
 
 **Backend API:** https://pulsechat-backend-production-f957.up.railway.app
 
