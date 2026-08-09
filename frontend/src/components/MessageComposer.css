@@ -1,0 +1,78 @@
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.composer-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 24px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.composer-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.composer-input::placeholder {
+  color: #9ca3af;
+}
+
+.composer-input:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+.composer-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.composer-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.composer-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.composer-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .composer {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .composer-input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .composer-button {
+    width: 40px;
+    height: 40px;
+  }
+}
