@@ -2,6 +2,10 @@
 
 A real-time chat application built using React, Node.js, Express and Socket.io.
 
+**Live Demo:** https://pulsechat-5lsk74ue2-aakash-8bba.vercel.app
+
+**Backend API:** https://pulsechat-backend-production-f957.up.railway.app
+
 ## Features
 
 - Real-time messaging with Socket.io
@@ -49,7 +53,7 @@ npm run dev
 
 ## Environment Variables
 
-### Backend (`backend/.env`)
+### Backend
 
 | Variable | Description |
 |---|---|
@@ -57,7 +61,7 @@ npm run dev
 | `MONGODB_URI` | MongoDB connection string |
 | `CLIENT_URL` | Frontend URL for CORS |
 
-### Frontend (`frontend/.env`)
+### Frontend
 
 | Variable | Description |
 |---|---|
