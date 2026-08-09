@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pulsechat-backend
+    runtime: node
+    region: oregon
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node src/server.js
+    envVars:
+      - key: CLIENT_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
