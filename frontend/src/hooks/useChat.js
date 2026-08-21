@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { connectSocket, getSocket, disconnectSocket } from '../services/socket';
-import { getMessages } from '../services/api';
+import { getMessages, uploadImage } from '../services/api';
 
 const useChat = (username) => {
   const [messages, setMessages] = useState([]);
@@ -60,6 +60,24 @@ const useChat = (username) => {
       setMessages((prev) => [...prev, message]);
     });
 
+    socket.on('message_edited', (updated) => {
+      setMessages((prev) =>
+        prev.map((m) => (m._id === updated._id ? { ...m, ...updated } : m))
+      );
+    });
+
+    socket.on('message_deleted', (updated) => {
+      setMessages((prev) =>
+        prev.map((m) => (m._id === updated._id ? { ...m, ...updated } : m))
+      );
+    });
+
+    socket.on('reaction_toggled', (updated) => {
+      setMessages((prev) =>
+        prev.map((m) => (m._id === updated._id ? { ...m, ...updated } : m))
+      );
+    });
+
     socket.on('typing_start', ({ username: user }) => {
       setTypingUsers((prev) => {
         if (!prev.includes(user)) return [...prev, user];
@@ -86,6 +104,57 @@ const useChat = (username) => {
     if (!socket?.connected || !text.trim()) return;
 
     socket.emit('send_message', { username, text: text.trim() });
+  }, [username]);
+
+  const sendImageMessage = useCallback(async (file, replyTo) => {
+    const socket = getSocket();
+    if (!socket?.connected) return;
+
+    try {
+      const result = await uploadImage(file);
+      socket.emit('send_message', {
+        username,
+        text: '',
+        type: 'image',
+        imageUrl: result.data.imageUrl,
+        replyTo: replyTo || null,
+      });
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      setError('Failed to upload image');
+    }
+  }, [username]);
+
+  const sendReply = useCallback((text, replyTo) => {
+    const socket = getSocket();
+    if (!socket?.connected || !text.trim()) return;
+
+    socket.emit('send_message', {
+      username,
+      text: text.trim(),
+      replyTo: replyTo || null,
+    });
+  }, [username]);
+
+  const editMessage = useCallback((messageId, newText) => {
+    const socket = getSocket();
+    if (!socket?.connected || !newText.trim()) return;
+
+    socket.emit('edit_message', { messageId, username, newText: newText.trim() });
+  }, [username]);
+
+  const deleteMessage = useCallback((messageId) => {
+    const socket = getSocket();
+    if (!socket?.connected) return;
+
+    socket.emit('delete_message', { messageId, username });
+  }, [username]);
+
+  const toggleReaction = useCallback((messageId, emoji) => {
+    const socket = getSocket();
+    if (!socket?.connected) return;
+
+    socket.emit('toggle_reaction', { messageId, username, emoji });
   }, [username]);
 
   const startTyping = useCallback(() => {
@@ -121,6 +190,11 @@ const useChat = (username) => {
     loading,
     error,
     sendMessage,
+    sendImageMessage,
+    sendReply,
+    editMessage,
+    deleteMessage,
+    toggleReaction,
     startTyping,
     stopTyping,
   };

@@ -1,15 +1,116 @@
-.composer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
+.composer-container {
+  position: relative;
   background: white;
   border-top: 1px solid #e5e7eb;
 }
 
+.reply-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f0f0ff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reply-bar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.reply-bar-label {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.reply-bar-text {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reply-bar-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.reply-bar-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 70px;
+  left: 16px;
+  z-index: 100;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.composer-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.composer-icon-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #667eea;
+}
+
+.composer-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.upload-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 .composer-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 24px;
   font-size: 15px;
@@ -60,19 +161,38 @@
   cursor: not-allowed;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 640px) {
   .composer {
-    padding: 12px;
-    gap: 8px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .composer-icon-btn {
+    width: 36px;
+    height: 36px;
   }
 
   .composer-input {
-    padding: 10px 14px;
+    padding: 9px 14px;
     font-size: 14px;
   }
 
   .composer-button {
     width: 40px;
     height: 40px;
+  }
+
+  .emoji-picker-container {
+    bottom: 64px;
+    left: 8px;
+  }
+
+  .emoji-picker-container > div {
+    width: 280px !important;
+    height: 340px !important;
   }
 }

@@ -14,6 +14,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return !!localStorage.getItem('pulsechat_username');
   });
+  const [replyTo, setReplyTo] = useState(null);
 
   const {
     messages,
@@ -23,6 +24,11 @@ const App = () => {
     loading,
     error,
     sendMessage,
+    sendImageMessage,
+    sendReply,
+    editMessage,
+    deleteMessage,
+    toggleReaction,
     startTyping,
     stopTyping,
   } = useChat(isLoggedIn ? username : null);
@@ -37,6 +43,10 @@ const App = () => {
     localStorage.removeItem('pulsechat_username');
     setUsername('');
     setIsLoggedIn(false);
+  };
+
+  const handleReply = (msg) => {
+    setReplyTo({ _id: msg._id, username: msg.username, text: msg.text, type: msg.type, imageUrl: msg.imageUrl });
   };
 
   if (!isLoggedIn) {
@@ -57,13 +67,21 @@ const App = () => {
           currentUser={username}
           loading={loading}
           error={error}
+          onReply={handleReply}
+          onEdit={editMessage}
+          onDelete={deleteMessage}
+          onReact={toggleReaction}
         />
         <TypingIndicator users={typingUsers} />
         <MessageComposer
           onSend={sendMessage}
+          onSendImage={sendImageMessage}
+          onSendReply={sendReply}
           onTyping={startTyping}
           onStopTyping={stopTyping}
           disabled={connectionStatus !== 'connected'}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
         />
       </div>
     </div>
