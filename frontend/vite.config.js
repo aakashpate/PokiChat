@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/pulsechat-app/',
+  base: '/PokiChat/',
   server: {
     port: 5173,
     host: true,
