@@ -1,12 +1,18 @@
-const Message = require('../models/Message');
+const { isDBConnected } = require('../config/database');
+const { listMessages, createMessage: persistMessage } = require('../store/messages');
 
 exports.getHealth = (req, res) => {
-  res.json({ success: true, message: 'PokiChat API is running' });
+  res.json({
+    success: true,
+    message: 'PokiChat API is running',
+    database: isDBConnected() ? 'connected' : 'memory',
+    timestamp: new Date().toISOString(),
+  });
 };
 
 exports.getMessages = async (req, res, next) => {
   try {
-    const messages = await Message.find().sort({ createdAt: 1 });
+    const messages = await listMessages();
     res.json({ success: true, data: messages });
   } catch (error) {
     next(error);
@@ -48,7 +54,7 @@ exports.createMessage = async (req, res, next) => {
       });
     }
 
-    const message = await Message.create({
+    const message = await persistMessage({
       username: trimmedUsername,
       text: trimmedText,
     });

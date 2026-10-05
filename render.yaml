@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pokichat-backend
+    runtime: node
+    region: oregon
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOW_MEMORY_DB
+        value: "true"
+      - key: CLIENT_URL
+        value: https://aakashpate.github.io

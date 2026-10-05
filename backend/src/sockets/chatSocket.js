@@ -1,4 +1,4 @@
-const Message = require('../models/Message');
+const { createMessage } = require('../store/messages');
 
 const chatSocket = (io) => {
   const connectedUsers = new Map();
@@ -28,7 +28,7 @@ const chatSocket = (io) => {
         if (!trimmedUsername || !trimmedText) return;
         if (trimmedUsername.length > 30 || trimmedText.length > 1000) return;
 
-        const message = await Message.create({
+        const message = await createMessage({
           username: trimmedUsername,
           text: trimmedText,
         });
