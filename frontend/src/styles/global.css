@@ -566,6 +566,200 @@ html, body, #root {
   color: white;
 }
 
+/* Composer extras (emoji + image) */
+.composer-shell {
+  position: relative;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--border-light);
+  color: var(--primary);
+}
+
+.btn-icon:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.emoji-picker-wrap {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 16px;
+  z-index: 60;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.emoji-picker-loading {
+  width: 320px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.upload-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.composer-error {
+  margin: 0;
+  padding: 6px 20px;
+  font-size: 12px;
+  color: var(--red);
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+}
+
+/* Image messages */
+.message-image {
+  display: block;
+  width: 100%;
+  max-width: min(320px, 100%);
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.bubble-image {
+  padding: 4px;
+}
+
+.bubble-image .message-text {
+  padding: 6px 8px 2px;
+}
+
+/* Message meta + reactions */
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.message-own .message-meta {
+  justify-content: flex-end;
+}
+
+.react-wrap {
+  position: relative;
+}
+
+.reaction-add-btn {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0.7;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+
+.message:hover .reaction-add-btn {
+  opacity: 1;
+}
+
+.reaction-add-btn:hover {
+  background: var(--border-light);
+}
+
+.reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+}
+
+.reaction-picker-btn {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  padding: 4px 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.12s, background-color 0.15s;
+}
+
+.reaction-picker-btn:hover {
+  background: var(--border-light);
+  transform: scale(1.15);
+}
+
+.reactions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reaction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  font-size: 12px;
+  line-height: 1.4;
+  background: var(--border-light);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.reaction-badge:hover {
+  border-color: var(--primary);
+}
+
+.reaction-badge.reaction-active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.reaction-count {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.reaction-badge.reaction-active .reaction-count {
+  color: var(--primary);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

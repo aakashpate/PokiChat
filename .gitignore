@@ -9,3 +9,4 @@ dist-*/
 PulseChat/
 start-servers.bat
 .DS_Store
+backend/uploads/

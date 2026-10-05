@@ -42,6 +42,8 @@ const isMixedContent =
 
 const isConfigured = Boolean(API_URL && SOCKET_URL) && !isMixedContent;
 
+const BASE_URL = API_URL ? stripApiPath(API_URL) : '';
+
 const configError = isConfigured
   ? null
   : isMixedContent
@@ -52,4 +54,4 @@ if (!isConfigured && import.meta.env.DEV) {
   console.warn(`[PokiChat] ${configError}`);
 }
 
-export { API_URL, SOCKET_URL, isConfigured, configError, isDev };
+export { API_URL, BASE_URL, SOCKET_URL, isConfigured, configError, isDev };

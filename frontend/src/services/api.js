@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_URL, isConfigured } from './config';
+import { API_URL, BASE_URL, isConfigured } from './config';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -37,6 +37,21 @@ export const getMessages = async () => {
 export const sendMessage = async (username, text) => {
   const response = await api.post('/messages', { username, text });
   return response.data;
+};
+
+export const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await api.post('/messages/upload', formData, {
+    timeout: 30000,
+  });
+  return response.data;
+};
+
+export const resolveImageUrl = (imageUrl) => {
+  if (!imageUrl) return '';
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+  return `${BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
 };
 
 export const getHealth = async () => {

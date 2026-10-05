@@ -20,9 +20,15 @@ const listMessages = async () => {
   return sortByCreatedAt(memoryMessages);
 };
 
-const createMessage = async ({ username, text }) => {
+const createMessage = async ({
+  username,
+  text = '',
+  type = 'text',
+  imageUrl = null,
+  reactions = {},
+}) => {
   if (isDBConnected()) {
-    return Message.create({ username, text });
+    return Message.create({ username, text, type, imageUrl, reactions });
   }
 
   const now = new Date().toISOString();
@@ -30,6 +36,9 @@ const createMessage = async ({ username, text }) => {
     _id: createId(),
     username,
     text,
+    type,
+    imageUrl,
+    reactions: { ...reactions },
     createdAt: now,
     updatedAt: now,
   };
@@ -38,4 +47,31 @@ const createMessage = async ({ username, text }) => {
   return message;
 };
 
-module.exports = { listMessages, createMessage };
+const applyReaction = (reactions, username, emoji) => {
+  const next = { ...(reactions || {}) };
+  if (next[username] === emoji) {
+    delete next[username];
+  } else {
+    next[username] = emoji;
+  }
+  return next;
+};
+
+const toggleReaction = async (messageId, username, emoji) => {
+  if (isDBConnected()) {
+    const message = await Message.findById(messageId);
+    if (!message) return null;
+    message.reactions = applyReaction(message.reactions, username, emoji);
+    await message.save();
+    return message;
+  }
+
+  const message = memoryMessages.find((item) => String(item._id) === String(messageId));
+  if (!message) return null;
+
+  message.reactions = applyReaction(message.reactions, username, emoji);
+  message.updatedAt = new Date().toISOString();
+  return message;
+};
+
+module.exports = { listMessages, createMessage, toggleReaction };

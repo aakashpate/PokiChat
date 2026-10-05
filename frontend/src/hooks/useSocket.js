@@ -115,6 +115,15 @@ export const useSocket = (username) => {
       });
     });
 
+    socket.on('reaction_toggled', ({ _id, reactions }) => {
+      setMessages((prev) =>
+        prev.map((item) =>
+          item._id === _id ? { ...item, reactions: reactions || {} } : item
+        )
+      );
+      setMessageError(null);
+    });
+
     socket.on('message_error', ({ message }) => {
       setMessageError(message || CONNECTION_ERROR_MESSAGE);
     });
@@ -141,7 +150,7 @@ export const useSocket = (username) => {
   }, [disconnect, connect]);
 
   const sendMessage = useCallback(
-    (text) => {
+    (text, extra = {}) => {
       const socket = socketRef.current;
 
       if (!socket || !socket.connected || !usernameRef.current) {
@@ -150,11 +159,32 @@ export const useSocket = (username) => {
       }
 
       setMessageError(null);
-      socket.emit('send_message', { username: usernameRef.current, text });
+      socket.emit('send_message', {
+        username: usernameRef.current,
+        text,
+        ...extra,
+      });
       return true;
     },
     []
   );
+
+  const toggleReaction = useCallback((messageId, emoji) => {
+    const socket = socketRef.current;
+
+    if (!socket || !socket.connected || !usernameRef.current) {
+      setMessageError(CONNECTION_ERROR_MESSAGE);
+      return false;
+    }
+
+    setMessageError(null);
+    socket.emit('toggle_reaction', {
+      messageId,
+      username: usernameRef.current,
+      emoji,
+    });
+    return true;
+  }, []);
 
   const startTyping = useCallback(() => {
     if (socketRef.current?.connected) {
@@ -202,6 +232,7 @@ export const useSocket = (username) => {
     disconnect,
     retry,
     sendMessage,
+    toggleReaction,
     startTyping,
     stopTyping,
     addMessage,

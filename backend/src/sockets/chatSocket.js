@@ -1,7 +1,23 @@
-const { createMessage } = require('../store/messages');
+const fs = require('fs');
+const path = require('path');
+const { createMessage, toggleReaction } = require('../store/messages');
+
+const VALID_REACTIONS = ['like', 'love', 'laugh', 'sad', 'angry'];
+const IMAGE_URL_PATTERN = /^\/uploads\/[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const UPLOADS_DIR = path.join(__dirname, '../../uploads');
 
 const chatSocket = (io) => {
   const connectedUsers = new Map();
+
+  const publicMessage = (message) => ({
+    _id: message._id,
+    username: message.username,
+    text: message.text || '',
+    type: message.type || 'text',
+    imageUrl: message.imageUrl || null,
+    reactions: message.reactions || {},
+    createdAt: message.createdAt,
+  });
 
   io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
@@ -18,30 +34,76 @@ const chatSocket = (io) => {
 
     socket.on('send_message', async (data) => {
       try {
-        const { username, text } = data;
+        const { username, text = '', type, imageUrl = null } = data || {};
 
-        if (!username || !text) return;
+        if (!username || !username.trim()) return;
 
         const trimmedUsername = username.trim();
-        const trimmedText = text.trim();
+        const trimmedText = String(text || '').trim();
+        const isImage = type === 'image';
 
-        if (!trimmedUsername || !trimmedText) return;
-        if (trimmedUsername.length > 30 || trimmedText.length > 1000) return;
+        if (trimmedUsername.length > 30) return;
+
+        if (isImage) {
+          const uploaded =
+            imageUrl &&
+            IMAGE_URL_PATTERN.test(imageUrl) &&
+            fs.existsSync(path.join(UPLOADS_DIR, path.basename(imageUrl)));
+
+          if (!uploaded) {
+            socket.emit('message_error', {
+              message: 'Upload the image before sending it',
+            });
+            return;
+          }
+        } else if (!trimmedText) {
+          return;
+        }
+
+        if (trimmedText.length > 1000) return;
 
         const message = await createMessage({
           username: trimmedUsername,
           text: trimmedText,
+          type: isImage ? 'image' : 'text',
+          imageUrl: isImage ? imageUrl : null,
         });
 
-        io.emit('receive_message', {
-          _id: message._id,
-          username: message.username,
-          text: message.text,
-          createdAt: message.createdAt,
-        });
+        io.emit('receive_message', publicMessage(message));
       } catch (error) {
         console.error('Error saving message:', error.message);
         socket.emit('message_error', { message: 'Failed to send message' });
+      }
+    });
+
+    socket.on('toggle_reaction', async (data) => {
+      try {
+        const { messageId, username, emoji } = data || {};
+
+        if (!messageId || !username || !username.trim() || !emoji) {
+          socket.emit('message_error', { message: 'Invalid reaction data' });
+          return;
+        }
+
+        if (!VALID_REACTIONS.includes(emoji)) {
+          socket.emit('message_error', { message: 'Invalid emoji type' });
+          return;
+        }
+
+        const updated = await toggleReaction(messageId, username.trim(), emoji);
+
+        if (!updated) {
+          socket.emit('message_error', { message: 'Message not found' });
+          return;
+        }
+
+        io.emit('reaction_toggled', {
+          _id: updated._id,
+          reactions: updated.reactions || {},
+        });
+      } catch (error) {
+        console.error('Error toggling reaction:', error.message);
+        socket.emit('message_error', { message: 'Failed to update reaction' });
       }
     });
 

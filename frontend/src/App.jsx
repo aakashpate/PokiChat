@@ -5,7 +5,7 @@ import MessagesArea from './components/MessagesArea';
 import MessageComposer from './components/MessageComposer';
 import TypingIndicator from './components/TypingIndicator';
 import { useSocket } from './hooks/useSocket';
-import { getMessages, getFriendlyError } from './services/api';
+import { getMessages, getFriendlyError, uploadImage } from './services/api';
 import { isConfigured, configError } from './services/config';
 
 const USERNAME_KEY = 'pokichat_username';
@@ -43,6 +43,7 @@ const App = () => {
     disconnect,
     retry,
     sendMessage,
+    toggleReaction,
     startTyping,
     stopTyping,
     setInitialMessages,
@@ -105,6 +106,24 @@ const App = () => {
     sendMessage(text);
   };
 
+  const handleSendImage = async (file, caption = '') => {
+    const response = await uploadImage(file);
+    const imageUrl = response?.data?.imageUrl;
+
+    if (!response?.success || !imageUrl) {
+      throw new Error(response?.message || 'Upload failed');
+    }
+
+    const sent = sendMessage(caption, { type: 'image', imageUrl });
+    if (!sent) {
+      throw new Error('Could not send image — connection lost. Try again.');
+    }
+  };
+
+  const handleReact = (messageId, emoji) => {
+    toggleReaction(messageId, emoji);
+  };
+
   const handleRetry = () => {
     retry();
     loadMessages();
@@ -146,10 +165,12 @@ const App = () => {
         isLoading={isLoading}
         error={emptyStateError}
         onRetry={handleRetry}
+        onReact={handleReact}
       />
       <TypingIndicator typingUsers={typingUsers} currentUser={username} />
       <MessageComposer
         onSend={handleSend}
+        onSendImage={handleSendImage}
         onTypingStart={startTyping}
         onTypingStop={stopTyping}
         disabled={!isConnected}

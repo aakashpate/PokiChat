@@ -10,6 +10,14 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ success: false, message: 'Invalid resource ID' });
   }
 
+  if (err.name === 'MulterError' || err.name === 'UploadError') {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE'
+        ? 'Image must be smaller than 5MB'
+        : err.message;
+    return res.status(400).json({ success: false, message });
+  }
+
   res.status(500).json({ success: false, message: 'Internal server error' });
 };
 

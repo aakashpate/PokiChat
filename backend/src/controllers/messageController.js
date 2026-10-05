@@ -64,3 +64,24 @@ exports.createMessage = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.uploadImage = (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        imageUrl: `/uploads/${req.file.filename}`,
+        filename: req.file.filename,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const messageRoutes = require('./routes/messageRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { expressCorsOptions } = require('./config/cors');
@@ -11,6 +12,14 @@ app.set('trust proxy', 1);
 app.use(cors(expressCorsOptions));
 
 app.use(express.json());
+
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, '../uploads'), {
+    maxAge: '365d',
+    immutable: true,
+  })
+);
 
 app.get('/', (req, res) => {
   res.json({

@@ -10,9 +10,22 @@ const messageSchema = new mongoose.Schema(
     },
     text: {
       type: String,
-      required: [true, 'Message text is required'],
       trim: true,
       maxlength: [1000, 'Message cannot exceed 1000 characters'],
+      default: '',
+    },
+    type: {
+      type: String,
+      enum: ['text', 'image'],
+      default: 'text',
+    },
+    imageUrl: {
+      type: String,
+      default: null,
+    },
+    reactions: {
+      type: Object,
+      default: () => ({}),
     },
   },
   {
