@@ -728,6 +728,7 @@ html, body, #root {
   right: auto;
   bottom: auto;
   z-index: 100;
+  visibility: hidden;
 }
 
 .reactions-row {

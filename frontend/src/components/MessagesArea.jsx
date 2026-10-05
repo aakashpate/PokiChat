@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { resolveImageUrl } from '../services/api';
 
@@ -13,8 +13,37 @@ const EMOJI_MAP = {
 const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReact }) => {
   const messagesEndRef = useRef(null);
   const [pickerFor, setPickerFor] = useState(null);
-  const [pickerRect, setPickerRect] = useState(null);
+  const pickerButtonRef = useRef(null);
   const pickerRef = useRef(null);
+
+  const closePicker = useCallback(() => {
+    pickerButtonRef.current = null;
+    setPickerFor(null);
+  }, []);
+
+  const updatePickerPosition = useCallback(() => {
+    const button = pickerButtonRef.current;
+    const picker = pickerRef.current;
+    if (!button || !picker) return;
+
+    const rect = button.getBoundingClientRect();
+    if (rect.bottom < 4 || rect.top > window.innerHeight - 4) {
+      closePicker();
+      return;
+    }
+
+    const width = picker.offsetWidth;
+    const height = picker.offsetHeight;
+    const spaceAbove = rect.top - height - 8;
+    const top = spaceAbove > 8 ? spaceAbove : rect.bottom + 8;
+    const left = Math.min(
+      Math.max(8, rect.left - width + 40),
+      Math.max(8, window.innerWidth - width - 8)
+    );
+    picker.style.top = `${Math.round(top)}px`;
+    picker.style.left = `${Math.round(left)}px`;
+    picker.style.visibility = 'visible';
+  }, [closePicker]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -24,7 +53,7 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
     const handleClickOutside = (e) => {
       if (!pickerFor) return;
       if (e.target.closest?.('.react-wrap') || e.target.closest?.('.reaction-picker')) return;
-      setPickerFor(null);
+      closePicker();
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -32,29 +61,18 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
 
   useEffect(() => {
     if (!pickerFor) return undefined;
-    const close = () => setPickerFor(null);
-    window.addEventListener('scroll', close, true);
-    window.addEventListener('resize', close);
+    const onMove = () => updatePickerPosition();
+    window.addEventListener('scroll', onMove, true);
+    window.addEventListener('resize', onMove);
     return () => {
-      window.removeEventListener('scroll', close, true);
-      window.removeEventListener('resize', close);
+      window.removeEventListener('scroll', onMove, true);
+      window.removeEventListener('resize', onMove);
     };
-  }, [pickerFor]);
+  }, [pickerFor, updatePickerPosition]);
 
   useLayoutEffect(() => {
-    if (!pickerFor || !pickerRect || !pickerRef.current) return;
-    const el = pickerRef.current;
-    const width = el.offsetWidth;
-    const height = el.offsetHeight;
-    const spaceAbove = pickerRect.top - height - 8;
-    const top = spaceAbove > 8 ? spaceAbove : pickerRect.bottom + 8;
-    const left = Math.min(
-      Math.max(8, pickerRect.left - width + 40),
-      Math.max(8, window.innerWidth - width - 8)
-    );
-    el.style.top = `${Math.round(top)}px`;
-    el.style.left = `${Math.round(left)}px`;
-  }, [pickerFor, pickerRect]);
+    updatePickerPosition();
+  });
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -74,7 +92,7 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
     if (onReact) {
       onReact(messageId, emojiKey);
     }
-    setPickerFor(null);
+    closePicker();
   };
 
   if (isLoading && messages.length === 0) {
@@ -174,10 +192,10 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
                         className="reaction-add-btn"
                         onClick={(e) => {
                           if (pickerFor === key) {
-                            setPickerFor(null);
+                            closePicker();
                             return;
                           }
-                          setPickerRect(e.currentTarget.getBoundingClientRect());
+                          pickerButtonRef.current = e.currentTarget;
                           setPickerFor(key);
                         }}
                         title="Add reaction"
@@ -186,7 +204,6 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
                         😀
                       </button>
                       {pickerFor === key &&
-                        pickerRect &&
                         createPortal(
                           <div className="reaction-picker reaction-picker-fixed" ref={pickerRef}>
                             {Object.entries(EMOJI_MAP).map(([emojiKey, emoji]) => (
