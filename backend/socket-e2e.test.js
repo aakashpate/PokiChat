@@ -2,6 +2,7 @@ const { io } = require('socket.io-client');
 
 const URL = process.env.TEST_URL || 'http://localhost:5000';
 const ORIGIN = process.env.TEST_ORIGIN || 'https://aakashpate.github.io';
+const transport = URL.startsWith('https:') ? require('https') : require('http');
 
 const results = [];
 const log = (name, ok, extra = '') => {
@@ -13,7 +14,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const httpGet = (path, origin = ORIGIN) =>
   new Promise((resolve, reject) => {
-    const http = require('http');
+    const http = transport;
     const req = http.get(`${URL}${path}`, { headers: origin ? { Origin: origin } : {} }, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
@@ -26,7 +27,7 @@ const httpGet = (path, origin = ORIGIN) =>
 
 const httpPost = (path, payload) =>
   new Promise((resolve, reject) => {
-    const http = require('http');
+    const http = transport;
     const body = JSON.stringify(payload);
     const req = http.request(
       `${URL}${path}`,
@@ -51,7 +52,7 @@ const httpPost = (path, payload) =>
 
 const preflight = (path, method) =>
   new Promise((resolve, reject) => {
-    const http = require('http');
+    const http = transport;
     const req = http.request(
       `${URL}${path}`,
       {

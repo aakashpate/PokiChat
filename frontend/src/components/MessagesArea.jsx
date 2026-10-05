@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { resolveImageUrl } from '../services/api';
 
 const EMOJI_MAP = {
@@ -12,6 +13,7 @@ const EMOJI_MAP = {
 const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReact }) => {
   const messagesEndRef = useRef(null);
   const [pickerFor, setPickerFor] = useState(null);
+  const [pickerRect, setPickerRect] = useState(null);
   const pickerRef = useRef(null);
 
   useEffect(() => {
@@ -20,13 +22,39 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
-        setPickerFor(null);
-      }
+      if (!pickerFor) return;
+      if (e.target.closest?.('.react-wrap') || e.target.closest?.('.reaction-picker')) return;
+      setPickerFor(null);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [pickerFor]);
+
+  useEffect(() => {
+    if (!pickerFor) return undefined;
+    const close = () => setPickerFor(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [pickerFor]);
+
+  useLayoutEffect(() => {
+    if (!pickerFor || !pickerRect || !pickerRef.current) return;
+    const el = pickerRef.current;
+    const width = el.offsetWidth;
+    const height = el.offsetHeight;
+    const spaceAbove = pickerRect.top - height - 8;
+    const top = spaceAbove > 8 ? spaceAbove : pickerRect.bottom + 8;
+    const left = Math.min(
+      Math.max(8, pickerRect.left - width + 40),
+      Math.max(8, window.innerWidth - width - 8)
+    );
+    el.style.top = `${Math.round(top)}px`;
+    el.style.left = `${Math.round(left)}px`;
+  }, [pickerFor, pickerRect]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -140,31 +168,41 @@ const MessagesArea = ({ messages, currentUser, isLoading, error, onRetry, onReac
                 <div className="message-meta">
                   <span className="message-time">{formatTime(msg.createdAt)}</span>
                   {onReact && (
-                    <div className="react-wrap" ref={pickerFor === key ? pickerRef : null}>
+                    <div className="react-wrap">
                       <button
                         type="button"
                         className="reaction-add-btn"
-                        onClick={() => setPickerFor(pickerFor === key ? null : key)}
+                        onClick={(e) => {
+                          if (pickerFor === key) {
+                            setPickerFor(null);
+                            return;
+                          }
+                          setPickerRect(e.currentTarget.getBoundingClientRect());
+                          setPickerFor(key);
+                        }}
                         title="Add reaction"
                         aria-label="Add reaction"
                       >
                         😀
                       </button>
-                      {pickerFor === key && (
-                        <div className="reaction-picker">
-                          {Object.entries(EMOJI_MAP).map(([emojiKey, emoji]) => (
-                            <button
-                              key={emojiKey}
-                              type="button"
-                              className="reaction-picker-btn"
-                              onClick={() => handleReact(msg._id, emojiKey)}
-                              title={emojiKey}
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {pickerFor === key &&
+                        pickerRect &&
+                        createPortal(
+                          <div className="reaction-picker reaction-picker-fixed" ref={pickerRef}>
+                            {Object.entries(EMOJI_MAP).map(([emojiKey, emoji]) => (
+                              <button
+                                key={emojiKey}
+                                type="button"
+                                className="reaction-picker-btn"
+                                onClick={() => handleReact(msg._id, emojiKey)}
+                                title={emojiKey}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>,
+                          document.body
+                        )}
                     </div>
                   )}
                 </div>
