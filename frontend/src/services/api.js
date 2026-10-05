@@ -4,9 +4,6 @@ import { API_URL, BASE_URL, isConfigured } from './config';
 const api = axios.create({
   baseURL: API_URL,
   timeout: 12000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export const CONNECTION_ERROR_MESSAGE = 'Server connection unavailable. Please try again.';
@@ -35,7 +32,11 @@ export const getMessages = async () => {
 };
 
 export const sendMessage = async (username, text) => {
-  const response = await api.post('/messages', { username, text });
+  const response = await api.post(
+    '/messages',
+    { username, text },
+    { headers: { 'Content-Type': 'application/json' } }
+  );
   return response.data;
 };
 
