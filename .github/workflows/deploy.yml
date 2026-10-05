@@ -6,16 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: gh-pages-deploy
+  cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +36,7 @@ jobs:
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
         run: |
           if [ -z "$VITE_API_URL" ] || [ -z "$VITE_SOCKET_URL" ]; then
-            echo "::warning::VITE_API_URL / VITE_SOCKET_URL secrets are not set. The build will start, but the site will show 'Server connection unavailable' until you add them under Settings -> Secrets and variables -> Actions."
+            echo "::warning::VITE_API_URL / VITE_SOCKET_URL secrets are not set. The site will show 'Server connection unavailable' until you add them under Settings -> Secrets and variables -> Actions."
           fi
 
       - name: Build
@@ -48,21 +46,17 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy dist to gh-pages branch
+        working-directory: frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd dist
+          touch .nojekyll
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
