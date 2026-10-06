@@ -330,25 +330,34 @@ typing indicators, history and online counts.
 
 ### Frontend (GitHub Pages)
 
-The Vite `base` is `/PokiChat/` for production builds, so the site lives at
-`https://aakashpate.github.io/PokiChat/`.
+Production builds read the site path from the `VITE_BASE` env var, so every
+deployment repo serves from its own path (the default stays `/PokiChat/`):
 
-1. Push the code to `https://github.com/aakashpate/PokiChat` (branch `master`)
+| Live site | Repository | `VITE_BASE` |
+| --- | --- | --- |
+| https://aakashpate.github.io/PokiChat/ | `aakashpate/PokiChat` | *(default `/PokiChat/`)* |
+| https://aakashpate.github.io/PokiChat-new/ | `aakashpate/PokiChat-new` | `/PokiChat-new/` |
+
+Both sites talk to the same backend (`https://pokichat-backend.onrender.com`).
+
+1. Push the code to the repo (branch `master`)
 2. Repo **Settings -> Secrets and variables -> Actions** and add:
-   - `VITE_API_URL` = `https://YOUR-BACKEND-URL/api`
-   - `VITE_SOCKET_URL` = `https://YOUR-BACKEND-URL`
+   - `VITE_API_URL` = `https://pokichat-backend.onrender.com/api`
+   - `VITE_SOCKET_URL` = `https://pokichat-backend.onrender.com`
+   - `VITE_BASE` = `/<repo-name>/` (only needed when the repo name differs from `PokiChat`)
 3. `.github/workflows/deploy.yml` builds `frontend/` and force-pushes `dist` to
    the `gh-pages` branch on every push to `master`
 4. Repo **Settings -> Pages -> Source**: **Deploy from a branch**, branch
    `gh-pages` / `/(root)`
-5. The site is then available at `https://aakashpate.github.io/PokiChat/`
+5. The site is then available at `https://aakashpate.github.io/<repo-name>/`
 
 Local check of the production build:
 
 ```bash
 cd frontend
 npm ci && npm run build && npm run preview
-# open http://localhost:4173/PokiChat/
+# default base:  http://localhost:4173/PokiChat/
+# custom base:   VITE_BASE=/PokiChat-new/ npm run build && npm run preview
 ```
 
 ### Backend (Render / Railway)
